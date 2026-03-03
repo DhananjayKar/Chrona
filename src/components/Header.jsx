@@ -1,30 +1,45 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isCalendar = location.pathname === "/calendar";
 
   return (
-    <header className="px-6 py-4 relative">
-      <div className="bg-[#A9B9D6] rounded-2xl px-5 py-3 flex justify-between items-center">
-        <h1 className="text-xl font-semibold">
+    <header className="relative">
+      <div className="bg-[#A9B9D6] rounded-b-2xl px-5 py-3 flex justify-between items-center">
+        <div className="flex items-center gap-4 relative">
+        <img src="/icons/chrona.png" alt="Chrona Icon" className="w-8 h-8" onClick={() => navigate("/")} />
+        <h1
+          onClick={() => navigate("/")}
+          className="text-xl font-semibold cursor-pointer"
+        >
           Chrona
         </h1>
+        </div>
 
         <div className="flex items-center gap-4 relative">
-          {/* Calendar Icon */}
+          {/* Dynamic Icon */}
           <div
-            onClick={() => navigate("/calendar")}
-            className="w-10 h-10 bg-blue-600 rounded-lg cursor-pointer"
-          />
+            onClick={() =>{
+              navigate(isCalendar ? "/" : "/calendar");
+              toast.success(`Switched to ${isCalendar? "Home": "Calendar"}`);}
+            }
+            className="w-12 h-12 cursor-pointer flex items-center justify-center"
+          >
+            {isCalendar ? <img src="/icons/home.gif" alt="Home" /> : <img src="/icons/calendar.gif" alt="Calendar" />}
+          </div>
 
           {/* User Icon */}
           <div
             onClick={() => setOpen(!open)}
-            className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center cursor-pointer"
           >
-            User
+            <img src="/icons/user.png" alt="User Icon" />
           </div>
 
           {/* Dropdown */}

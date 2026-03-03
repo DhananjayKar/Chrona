@@ -10,7 +10,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppLayout>
-        <Toaster position="top-right" />
+         <Toaster
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "#ebeefa",
+              color: "#000",
+              borderRadius: "16px",
+              padding: "12px 16px",
+            },
+            success: {
+              iconTheme: {
+                primary: "green",
+                secondary: "white",
+              },
+            },
+          }}
+        />
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTasks } from "../context/TaskProvider";
+import toast from "react-hot-toast";
 
 export default function TaskInput({ selectedDate }) {
   const { addTask } = useTasks();
@@ -8,7 +9,10 @@ export default function TaskInput({ selectedDate }) {
 
   const handleAdd = () => {
     const trimmedTitle = title.trim();
-    if (!trimmedTitle) return;
+    if (!trimmedTitle) {
+      toast.error("Tasks cannot be empty.");
+      return;
+    };
     if (!selectedDate) return;
 
     addTask( trimmedTitle, selectedDate, time || null);

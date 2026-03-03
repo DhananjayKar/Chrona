@@ -28,8 +28,11 @@ export default function Home() {
 
   const [searchParams] = useSearchParams();
 
-  const selectedDate =
-    searchParams.get("date") || getTodayISO();
+  const queryDate = searchParams.get("date");
+
+  const selectedDate = queryDate
+    ? new Date(queryDate).toISOString().split("T")[0]
+    : getTodayISO();
 
   const formattedDate = new Date(selectedDate).toLocaleDateString(
     "en-IN",

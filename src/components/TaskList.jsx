@@ -29,7 +29,7 @@ export default function TaskList({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 200,      // 👈 long press for mobile
+        delay: 200,
         tolerance: 5,
       },
     })

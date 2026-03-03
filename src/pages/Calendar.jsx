@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useTasks } from "../context/TaskProvider";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore } from "date-fns";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function Calendar() {
   const { tasks } = useTasks();
-  console.log("TASKS:", tasks);
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const firstDay = startOfMonth(currentDate);
@@ -38,31 +36,43 @@ export default function Calendar() {
 
     const handleDateClick = (dateISO) => {
       navigate(`/?date=${dateISO}`);
+      toast.success(`Navigated to ${dateISO.toLocaleDateString(
+    "en-IN",
+    {
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+    })} successfully.`)
     };
 
-  const getStatusColor = (date) => {
-    const iso = format(date, "yyyy-MM-dd");
+    const getStatusColor = (date) => {
+      const iso = format(date, "yyyy-MM-dd");
+      const todayISO = format(new Date(), "yyyy-MM-dd");
 
-    const tasksForDay = tasks.filter((t) => {
-    const taskDate = format(new Date(t.date), "yyyy-MM-dd");
-    return taskDate === iso;
-    });
+      const tasksForDay = tasks.filter((t) => {
+        const taskDate = format(new Date(t.date), "yyyy-MM-dd");
+        return taskDate === iso;
+      });
 
-    if (tasksForDay.length === 0) return null;
+      if (tasksForDay.length === 0) return null;
 
-    const allCompleted = tasksForDay.every(
-      (t) => t.completed
-    );
+      const allCompleted = tasksForDay.every(
+        (t) => t.completed
+      );
 
-    const someIncomplete = tasksForDay.some(
-      (t) => !t.completed
-    );
+      if (allCompleted) return "bg-green-400";
 
-    if (allCompleted) return "bg-green-400";
-    if (someIncomplete) return "bg-red-400";
+      const currentDay = new Date(iso);
+      const today = new Date(todayISO);
 
-    return "bg-yellow-300";
-  };
+      // If date is before today and has incomplete tasks → overdue
+      if (isBefore(currentDay, today)) {
+        return "bg-red-400";
+      }
+
+      // Today or future with incomplete → pending
+      return "bg-yellow-300";
+    };
 
   return (
     <div className="max-w-4xl mx-auto py-10">
@@ -76,7 +86,7 @@ export default function Calendar() {
         }`}
         >
         <button onClick={() => changeMonth(-1)}>
-          <ChevronLeft size={40} />
+          <img src="/icons/arrow-left.png" alt="arrowLeft" className="w-8 h-8" />
         </button>
 
         <h2 className="text-3xl font-semibold">
@@ -84,7 +94,7 @@ export default function Calendar() {
         </h2>
 
         <button onClick={() => changeMonth(1)}>
-          <ChevronRight size={40} />
+          <img src="/icons/arrow-right.png" alt="arrowRight" className="w-8 h-8" />
         </button>
       </div>
 
@@ -108,7 +118,7 @@ export default function Calendar() {
             <div
             key={date.toISOString()}
             className={`h-20 border flex items-center justify-center relative cursor-pointer transition
-                ${isTodayCell ? "bg-blue-50 border-blue-400" : ""}
+                ${isTodayCell ? "bg-green-100 border-blue-400 not-odd hover:bg-green-200" : ""}
             `}
             >
               <button onClick={() => handleDateClick(date)}><span className="text-lg font-bold relative z-10">

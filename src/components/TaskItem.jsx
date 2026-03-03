@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -21,6 +21,24 @@ export default function TaskItem({
     isDragging,
   } = useSortable({ id: task.id });
 
+  const editRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (editRef.current && !editRef.current.contains(e.target)) {
+        handleCancel();
+      }
+    }
+
+    if (isEditing) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEditing]);
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -31,6 +49,12 @@ export default function TaskItem({
       title: editTitle.trim(),
       time: editTime || null,
     });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditTitle(task.title);
+    setEditTime(task.time);
     setIsEditing(false);
   };
 
@@ -45,15 +69,20 @@ export default function TaskItem({
       ${isDragging ? "shadow-xl scale-105" : ""}`}
     >
       {isEditing ? (
-        <div className="flex items-center gap-4 w-full">
+        <div ref={editRef} className="relative flex items-center gap-4 w-full p-1 rounded-xl">
+
+          {/* Close Button */}
+          <button
+            onClick={handleCancel}
+            className="absolute top-0 right-0 -translate-y-3/4 translate-x-3/4 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 transition"
+          >
+            ✕
+          </button>
+
           <input
             value={editTitle}
-            onChange={(e) =>
-              setEditTitle(e.target.value)
-            }
-            onKeyDown={(e) =>
-              e.key === "Enter" && handleSave()
-            }
+            onChange={(e) => setEditTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSave()}
             className="flex-1 px-3 py-1 rounded-lg border"
             autoFocus
           />
@@ -61,9 +90,7 @@ export default function TaskItem({
           <input
             type="time"
             value={editTime}
-            onChange={(e) =>
-              setEditTime(e.target.value)
-            }
+            onChange={(e) => setEditTime(e.target.value)}
             className="px-2 py-1 rounded-lg border"
           />
 
@@ -82,22 +109,21 @@ export default function TaskItem({
               onClick={onToggle}
               className={`text-base font-medium cursor-pointer wrap-break-words ${
                 task.completed
-                  ? "line-through"
+                  ? "line-through text-gray-500"
                   : ""
               }`}
             >
               {task.title}
             </p>
+          </div>
 
+          {/* RIGHT */}
+          <div className="flex items-center gap-3 shrink-0">
             {task.time && (
               <span className="bg-[#F3D98B] border border-red-400 px-3 py-0.5 rounded-full text-sm shrink-0">
                 {task.time}
               </span>
             )}
-          </div>
-
-          {/* RIGHT */}
-          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={onToggle}
               className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-sm ${
