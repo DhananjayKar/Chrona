@@ -1,12 +1,16 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AppLayout from "./layout/AppLayout";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Calendar from "./pages/Calendar";
 import { Toaster } from "react-hot-toast";
+import Auth from "./pages/Auth";
+import { useAuth } from "./context/AuthContext";
 
 export default function App() {
+  const { user } = useAuth();
+  console.log( user );
   return (
     <BrowserRouter>
       <AppLayout>
@@ -29,8 +33,9 @@ export default function App() {
         />
         <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={user ? <Home /> : <Navigate to="/auth" />} />
           <Route path="/calendar" element={<Calendar />} />
+          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
         </Routes>
         <Footer />
       </AppLayout>

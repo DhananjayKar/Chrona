@@ -83,7 +83,7 @@ export default function TaskItem({
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            className="flex-1 px-3 py-1 rounded-lg border"
+            className="flex-1 px-3 py-1 rounded-lg border outline-none"
             autoFocus
           />
 
