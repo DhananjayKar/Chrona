@@ -18,91 +18,66 @@ import {
 } from "@dnd-kit/sortable";
 
 export default function Home() {
-  const {
-    tasks,
-    toggleTask,
-    editTask,
-    deleteTask,
-    reorderTasks,
-  } = useTasks();
-
+  const { tasks, toggleTask, editTask, deleteTask, reorderTasks } = useTasks();
   const [searchParams] = useSearchParams();
-
   const queryDate = searchParams.get("date");
 
   const selectedDate = queryDate
     ? new Date(queryDate).toISOString().split("T")[0]
     : getTodayISO();
 
-  const formattedDate = new Date(selectedDate).toLocaleDateString(
-    "en-IN",
-    {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }
-  );
+  const formattedDate = new Date(selectedDate).toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 
-  const filteredTasks = tasks.filter(
-    (t) => t.date === selectedDate
-  );
+  const filteredTasks = tasks.filter((t) => t.date === selectedDate);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-
     if (!over || active.id === over.id) return;
 
-    const oldIndex = filteredTasks.findIndex(
-      (t) => t.id === active.id
-    );
+    const oldIndex = filteredTasks.findIndex((t) => t.id === active.id);
+    const newIndex = filteredTasks.findIndex((t) => t.id === over.id);
 
-    const newIndex = filteredTasks.findIndex(
-      (t) => t.id === over.id
-    );
-
-    const reorderedFiltered = arrayMove(
-      filteredTasks,
-      oldIndex,
-      newIndex
-    );
-
-    const otherTasks = tasks.filter(
-      (t) => t.date !== selectedDate
-    );
+    const reorderedFiltered = arrayMove(filteredTasks, oldIndex, newIndex);
+    const otherTasks = tasks.filter((t) => t.date !== selectedDate);
 
     reorderTasks([...otherTasks, ...reorderedFiltered]);
   };
 
   return (
     <div className="flex-1">
-      <div className="max-w-xl mx-auto px-6 py-6">
-        <p className="inline-flex items-center gap-3 bg-[#F6B5B5] text-blue-700 px-4 py-2 rounded-xl font-medium mb-6">
+      <div className="max-w-full sm:max-w-xl mx-auto px-4 sm:px-6 pt-6 pb-1">
+        {/* Date & TODAY Badge */}
+        <p className="inline-flex items-center gap-2 sm:gap-3 text-blue-700 px-3 sm:px-4 py-2 rounded-xl font-bold mb-1 text-sm sm:text-base">
           {formattedDate}
-
           {isToday(selectedDate) && (
-            <span className="bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+            <span className="bg-green-500 text-white text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1 rounded-full shadow-sm">
               TODAY
             </span>
           )}
         </p>
 
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
+        {/* Divider */}
+        <div className="text-red-400 border-2 rounded-full shadow-2xl w-50 sm:w-72"></div>
+
+        {/* Task Input */}
+        <div className="p-4 pb-0 mt-4">
           <TaskInput selectedDate={selectedDate} />
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-4">
+        {/* Task List */}
+        <div className="pb-2.5">
           {filteredTasks.length === 0 ? (
-            <div className="text-center mt-10">
-              <p className="text-lg font-serif text-gray-700">
+            <div className="text-center mt-10 px-2">
+              <p className="text-base sm:text-lg font-serif text-gray-700">
                 No tasks. Please add if required.
               </p>
             </div>
@@ -117,16 +92,14 @@ export default function Home() {
                 items={filteredTasks.map((t) => t.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <ul className="mt-8">
+                <ul className="mt-6 sm:mt-8 px-1 sm:px-0">
                   {filteredTasks.map((task) => (
                     <TaskItem
                       key={task.id}
                       task={task}
                       onToggle={() => toggleTask(task.id)}
                       onDelete={() => deleteTask(task.id)}
-                      onEdit={(updates) =>
-                        editTask(task.id, updates)
-                      }
+                      onEdit={(updates) => editTask(task.id, updates)}
                     />
                   ))}
                 </ul>

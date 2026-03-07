@@ -7,10 +7,19 @@ import Calendar from "./pages/Calendar";
 import { Toaster } from "react-hot-toast";
 import Auth from "./pages/Auth";
 import { useAuth } from "./context/AuthContext";
+import Loader from './components/Loader';
 
 export default function App() {
-  const { user } = useAuth();
-  console.log( user );
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return(
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader />
+    </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <AppLayout>
@@ -35,7 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={user ? <Home /> : <Navigate to="/auth" />} />
           <Route path="/calendar" element={<Calendar />} />
-          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
+          <Route path="/auth" element={<Auth />} />
         </Routes>
         <Footer />
       </AppLayout>
