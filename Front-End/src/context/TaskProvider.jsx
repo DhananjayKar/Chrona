@@ -1,62 +1,215 @@
 import { createContext, useContext, useReducer, useEffect, useRef } from "react";
 import { taskReducer, initialState } from "../store/taskReducer";
 import { taskService } from "../services/taskService";
+import { useAuth } from "./AuthContext";
 import toast from "react-hot-toast";
 
 const TaskContext = createContext();
 
 export function TaskProvider({ children }) {
   const [tasks, dispatch] = useReducer(taskReducer, initialState);
+  const { user } = useAuth();
 
+  const isLoggedIn = !!user;
   const isFirstRender = useRef(true);
 
-  // Load once
+  // =========================
+  // LOAD TASKS
+  // =========================
   useEffect(() => {
-    const stored = taskService.getAll();
-    dispatch({ type: "SET", payload: stored });
-  }, []);
+    const loadTasks = async () => {
+      try {
+        let data = [];
 
-  // Save on change (but NOT on first render)
+        if (isLoggedIn) {
+          data = await taskService.getTasks(); // MongoDB
+        } else {
+          data = await taskService.getAll(); // localStorage
+        }
+
+        dispatch({
+          type: "SET",
+          payload: Array.isArray(data) ? data : [],
+        });
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load tasks");
+      }
+    };
+
+    loadTasks();
+  }, [isLoggedIn]);
+
+  // =========================
+  // SAVE GUEST TASKS
+  // =========================
   useEffect(() => {
+
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
 
-    taskService.save(tasks);
-  }, [tasks]);
+    if (!isLoggedIn) {
+      taskService.save(tasks);
+    }
 
-  const addTask = (title, date, time = null) => {
-    dispatch({
-      type: "ADD",
-      payload: { title, date, time },
-    });
-    toast.success(`Successfully added ${title}!`);
+  }, [tasks, isLoggedIn]);
+
+  // =========================
+  // ADD TASK
+  // =========================
+  const addTask = async (title, date, time = null) => {
+    try {
+
+      if (isLoggedIn) {
+
+        // 🔐 Logged-in user → MongoDB
+        await taskService.createTask({ title, date, time });
+
+        const updatedTasks = await taskService.getTasks();
+
+        dispatch({
+          type: "SET",
+          payload: updatedTasks
+        });
+
+      } else {
+
+        // 🧑‍💻 Guest → localStorage
+        dispatch({
+          type: "ADD",
+          payload: {
+            id: crypto.randomUUID(),
+            title,
+            date,
+            time,
+            completed: false,
+            userEmail: "Guest"
+          }
+        });
+
+      }
+
+      toast.success(`Successfully added ${title}!`);
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add task");
+    }
   };
 
-  const toggleTask = (id) => {
-    dispatch({ type: "TOGGLE", payload: id });
-    toast.success("Task checked.")
-  }
+  // =========================
+  // TOGGLE TASK
+  // =========================
+  const toggleTask = async (id) => {
+    try {
 
-  const editTask = (id, updates) => {
-    dispatch({
-      type: "EDIT",
-      payload: { id, ...updates },
-    });
-    toast.success("Task updated successfully!");
-  }
+      if (isLoggedIn) {
 
-  const deleteTask = (id) => {
-    dispatch({ type: "DELETE", payload: id });
-    toast.success("Task deleted successfully.")
-  }
+        await taskService.toggleTask(id);
 
-  const reorderTasks = (newOrderedTasks) =>
+        const updatedTasks = await taskService.getTasks();
+
+        dispatch({
+          type: "SET",
+          payload: updatedTasks
+        });
+
+      } else {
+
+        dispatch({
+          type: "TOGGLE",
+          payload: id
+        });
+
+      }
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to toggle task");
+    }
+  };
+
+  // =========================
+  // EDIT TASK
+  // =========================
+  const editTask = async (id, updates) => {
+    try {
+
+      if (isLoggedIn) {
+
+        await taskService.updateTask(id, updates);
+
+        const updatedTasks = await taskService.getTasks();
+
+        dispatch({
+          type: "SET",
+          payload: updatedTasks
+        });
+
+      } else {
+
+        dispatch({
+          type: "EDIT",
+          payload: { id, ...updates }
+        });
+
+      }
+
+      toast.success("Task updated");
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Update failed");
+    }
+  };
+
+  // =========================
+  // DELETE TASK
+  // =========================
+  const deleteTask = async (id) => {
+    try {
+
+      if (isLoggedIn) {
+
+        await taskService.deleteTask(id);
+
+        const updatedTasks = await taskService.getTasks();
+
+        dispatch({
+          type: "SET",
+          payload: updatedTasks
+        });
+
+      } else {
+
+        dispatch({
+          type: "DELETE",
+          payload: id
+        });
+
+      }
+
+      toast.success("Task deleted");
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete");
+    }
+  };
+
+  // =========================
+  // REORDER TASKS
+  // =========================
+  const reorderTasks = (newOrderedTasks) => {
+
     dispatch({
       type: "REORDER",
-      payload: newOrderedTasks,
+      payload: newOrderedTasks
     });
+
+  };
 
   return (
     <TaskContext.Provider

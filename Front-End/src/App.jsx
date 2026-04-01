@@ -42,7 +42,7 @@ export default function App() {
         />
         <Header />
         <Routes>
-          <Route path="/" element={user ? <Home /> : <Navigate to="/auth" />} />
+          <Route path="/" element={<Home />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/auth" element={<Auth />} />
         </Routes>

@@ -51,7 +51,7 @@ export default function Header() {
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4 mt-2 sm:mt-0">
           {/* Dynamic Icon */}
-          {user && !isAuthPage ? (
+          {!isAuthPage ? (
             <>
               <div
                 onClick={() => {

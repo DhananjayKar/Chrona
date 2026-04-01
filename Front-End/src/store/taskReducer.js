@@ -8,13 +8,7 @@ export function taskReducer(state, action) {
     case "ADD":
       return [
         ...state,
-        {
-          id: crypto.randomUUID(),
-          title: action.payload.title,
-          date: action.payload.date,
-          time: action.payload.time || null,
-          completed: false,
-        },
+        action.payload
       ];
 
     case "TOGGLE":
