@@ -84,8 +84,8 @@ export default function Header() {
                     {/* Dropdown */}
                     {open && (
                       <div className="absolute right-0 top-12 sm:top-16 bg-[#B8C8DD] border-4 border-gray-400 rounded-2xl w-44 sm:w-56 shadow-lg z-50">
-                        <div className="p-3 sm:p-4 text-base sm:text-lg border-b border-gray-500 text-center">
-                          {user?.name || "User"}
+                        <div className="p-3 sm:p-4 text-base sm:text-lg border-double border-gray-500 text-center">
+                          <p className="hover:scale-110">{user?.name || "User"}</p>
                         </div>
 
                         <button
@@ -93,9 +93,9 @@ export default function Header() {
                             logout();
                             navigate("/auth");
                           }}
-                          className="w-full bg-red-500 text-white text-base sm:text-lg py-2 sm:py-3 rounded-b-2xl"
+                          className="w-full bg-red-400 hover:bg-red-500 hover:text-white text-base sm:text-lg py-2 sm:py-3 rounded-b-2xl text-red-700"
                         >
-                          Logout
+                          <p className="hover:scale-110">Logout</p>
                         </button>
                       </div>
                     )}

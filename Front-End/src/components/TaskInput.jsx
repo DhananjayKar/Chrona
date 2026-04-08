@@ -28,6 +28,11 @@ export default function TaskInput({ selectedDate }) {
         placeholder="Add a task..."
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={(e)=>{
+          if (e.key === "Enter") {
+            handleAdd();
+          }
+        }}
         className="w-full sm:flex-1 bg-transparent outline-none text-base px-2 py-1 rounded-md"
       />
 

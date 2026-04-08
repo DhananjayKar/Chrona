@@ -26,7 +26,7 @@ export const taskService = {
 
     console.log("Guest tasks:", tasks);
 
-    return Array.isArray(tasks) ? tasks : [];
+    return Array.isArray(tasks) ? tasks.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
   },
 
 
@@ -56,7 +56,8 @@ export const taskService = {
       date: task.date,
       time: task.time,
       completed: task.completed || false,
-    }));
+      order: task.order ?? 0
+    })).sort((a, b) => a.order - b.order);
   },
 
 
@@ -92,6 +93,7 @@ export const taskService = {
         time: task.time || null,
         completed: false,
         userEmail: "Guest",
+        order: Date.now(),
       };
     }
 

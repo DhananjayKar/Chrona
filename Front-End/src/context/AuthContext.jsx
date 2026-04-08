@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, use } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { taskService } from "../services/taskService";
 import Confirm from "../components/Confirm";
 
@@ -60,9 +60,6 @@ export function AuthProvider({ children }) {
     // ✅ STEP 3: NOW update state
     setUser(data.user);
 
-    // 🔥 STEP 4: reload AFTER everything
-    window.location.reload();
-
     return data.user;
   };
 
@@ -94,8 +91,6 @@ export function AuthProvider({ children }) {
 
     setUser(data.user);
 
-    window.location.reload();
-
     return data.user;
   };
 
@@ -122,9 +117,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
 
     setUser(null);
-
-    // 🔥 hard reset
-    window.location.reload();
   };
 
   return (

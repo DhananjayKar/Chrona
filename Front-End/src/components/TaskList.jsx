@@ -29,15 +29,17 @@ export default function TaskList({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 200,
-        tolerance: 5,
+        distance: 6,
+        // delay: 200,
+        // tolerance: 5,
       },
     })
   );
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-
+    console.log(active.id, over?.id);
+    
     if (!over || active.id === over.id) return;
 
     const oldIndex = tasks.findIndex(t => t.id === active.id);
