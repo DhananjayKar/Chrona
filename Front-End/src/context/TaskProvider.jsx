@@ -7,102 +7,116 @@ import toast from "react-hot-toast";
 const TaskContext = createContext();
 
 export function TaskProvider({ children }) {
+
   const [tasks, dispatch] = useReducer(taskReducer, initialState);
+
   const { user } = useAuth();
 
   const isLoggedIn = !!user;
-  const isFirstRender = useRef(true);
+
+  // 🔒 prevents save before tasks load
+  const isLoaded = useRef(false);
 
   // =========================
   // LOAD TASKS
   // =========================
   useEffect(() => {
+
     const loadTasks = async () => {
+
       try {
+
         let data = [];
 
         if (isLoggedIn) {
-          data = await taskService.getTasks(); // MongoDB
+          data = await taskService.getTasks();
         } else {
-          data = await taskService.getAll(); // localStorage
+          data = await taskService.getAll();
         }
 
         dispatch({
           type: "SET",
           payload: Array.isArray(data) ? data : [],
         });
+
+        // allow saving AFTER load
+        isLoaded.current = true;
+
       } catch (err) {
         console.error(err);
         toast.error("Failed to load tasks");
       }
+
     };
 
     loadTasks();
+
   }, [isLoggedIn]);
+
+
 
   // =========================
   // SAVE GUEST TASKS
   // =========================
   useEffect(() => {
 
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    // ❌ don't save before tasks load
+    if (!isLoaded.current) return;
 
-    if (!isLoggedIn) {
-      taskService.save(tasks);
-    }
+    // ❌ don't save if logged in
+    if (isLoggedIn) return;
+
+    taskService.save(tasks);
 
   }, [tasks, isLoggedIn]);
+
+
 
   // =========================
   // ADD TASK
   // =========================
   const addTask = async (title, date, time = null) => {
+
     try {
 
       if (isLoggedIn) {
 
-        // 🔐 Logged-in user → MongoDB
         await taskService.createTask({ title, date, time });
 
         const updatedTasks = await taskService.getTasks();
 
         dispatch({
           type: "SET",
-          payload: updatedTasks
+          payload: updatedTasks,
         });
 
       } else {
 
-        // 🧑‍💻 Guest → localStorage
         dispatch({
           type: "ADD",
-          payload: {
-            id: crypto.randomUUID(),
-            title,
-            date,
-            time,
-            completed: false,
-            userEmail: "Guest"
-          }
+          payload: { title, date, time },
         });
 
       }
 
-      toast.success(`Successfully added ${title}!`);
+      toast.success(`Added "${title}"`);
 
     } catch (err) {
+
       console.error(err);
       toast.error("Failed to add task");
+
     }
+
   };
+
+
 
   // =========================
   // TOGGLE TASK
   // =========================
   const toggleTask = async (id) => {
+
     try {
 
       if (isLoggedIn) {
@@ -113,28 +127,34 @@ export function TaskProvider({ children }) {
 
         dispatch({
           type: "SET",
-          payload: updatedTasks
+          payload: updatedTasks,
         });
 
       } else {
 
         dispatch({
           type: "TOGGLE",
-          payload: id
+          payload: id,
         });
 
       }
 
     } catch (err) {
+
       console.error(err);
       toast.error("Failed to toggle task");
+
     }
+
   };
+
+
 
   // =========================
   // EDIT TASK
   // =========================
   const editTask = async (id, updates) => {
+
     try {
 
       if (isLoggedIn) {
@@ -145,14 +165,14 @@ export function TaskProvider({ children }) {
 
         dispatch({
           type: "SET",
-          payload: updatedTasks
+          payload: updatedTasks,
         });
 
       } else {
 
         dispatch({
           type: "EDIT",
-          payload: { id, ...updates }
+          payload: { id, ...updates },
         });
 
       }
@@ -160,15 +180,21 @@ export function TaskProvider({ children }) {
       toast.success("Task updated");
 
     } catch (err) {
+
       console.error(err);
       toast.error("Update failed");
+
     }
+
   };
+
+
 
   // =========================
   // DELETE TASK
   // =========================
   const deleteTask = async (id) => {
+
     try {
 
       if (isLoggedIn) {
@@ -179,14 +205,14 @@ export function TaskProvider({ children }) {
 
         dispatch({
           type: "SET",
-          payload: updatedTasks
+          payload: updatedTasks,
         });
 
       } else {
 
         dispatch({
           type: "DELETE",
-          payload: id
+          payload: id,
         });
 
       }
@@ -194,24 +220,32 @@ export function TaskProvider({ children }) {
       toast.success("Task deleted");
 
     } catch (err) {
+
       console.error(err);
       toast.error("Failed to delete");
+
     }
+
   };
 
+
+
   // =========================
-  // REORDER TASKS
+  // DRAG REORDER
   // =========================
-  const reorderTasks = (newOrderedTasks) => {
+  const reorderTasks = (newTasks) => {
 
     dispatch({
       type: "REORDER",
-      payload: newOrderedTasks
+      payload: newTasks,
     });
 
   };
 
+
+
   return (
+
     <TaskContext.Provider
       value={{
         tasks,
@@ -224,7 +258,9 @@ export function TaskProvider({ children }) {
     >
       {children}
     </TaskContext.Provider>
+
   );
+
 }
 
 export const useTasks = () => useContext(TaskContext);

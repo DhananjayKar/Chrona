@@ -16,11 +16,14 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+import { useState  } from "react";
+import { motion } from "framer-motion";
 
 export default function Home() {
   const { tasks, toggleTask, editTask, deleteTask, reorderTasks } = useTasks();
+  const [hovered, setHovered] = useState(false);
+  const [active, setActive] = useState(false);
 
-  // 🛡️ SAFETY: ensure tasks is always an array
   const safeTasks = Array.isArray(tasks) ? tasks : [];
 
   const [searchParams] = useSearchParams();
@@ -37,10 +40,7 @@ export default function Home() {
     year: "numeric",
   });
 
-  // 🛡️ SAFE FILTER
-  const filteredTasks = safeTasks.filter(
-    (t) => t?.date === selectedDate
-  );
+  const filteredTasks = safeTasks.filter((t) => t?.date === selectedDate);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -53,14 +53,11 @@ export default function Home() {
     const oldIndex = filteredTasks.findIndex((t) => t.id === active.id);
     const newIndex = filteredTasks.findIndex((t) => t.id === over.id);
 
-    if (oldIndex === -1 || newIndex === -1) return; // 🛡️ safety
+    if (oldIndex === -1 || newIndex === -1) return;
 
     const reorderedFiltered = arrayMove(filteredTasks, oldIndex, newIndex);
 
-    // 🛡️ SAFE OTHER TASKS
-    const otherTasks = safeTasks.filter(
-      (t) => t?.date !== selectedDate
-    );
+    const otherTasks = safeTasks.filter((t) => t?.date !== selectedDate);
 
     reorderTasks([...otherTasks, ...reorderedFiltered]);
   };
@@ -68,33 +65,48 @@ export default function Home() {
   return (
     <div className="flex-1">
       <div className="max-w-full sm:max-w-xl mx-auto px-4 sm:px-6 pt-6 pb-1">
-        
-        {/* Date & TODAY Badge */}
-        <p className="inline-flex items-center gap-2 sm:gap-3 text-blue-700 px-3 sm:px-4 py-2 rounded-xl font-bold mb-1 text-sm sm:text-base">
-          {formattedDate}
-          {isToday(selectedDate) && (
-            <span className="bg-green-500 text-white text-xs sm:text-sm font-semibold px-2 sm:px-3 py-1 rounded-full shadow-sm">
-              TODAY
-            </span>
-          )}
-        </p>
 
-        {/* Divider */}
-        <div className="text-red-400 border-2 rounded-full shadow-2xl w-50 sm:w-72"></div>
+        {/* Animated Date Section */}
+        <motion.div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onClick={()=> { setActive(!active) }}
+          whileHover={{ scale: 1.25 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{ type: "spring", stiffness: 260, damping: 15 }}
+          className="w-52 h-14
+            inline-flex items-center gap-3 pt-4 rounded-xl
+            font-bold text-sm sm:text-base
+            cursor-pointer
+            transition-all duration-150
+          "
+        >
+          <span className="text-blue-700 transition-all duration-200">
+            {isToday(selectedDate) && hovered ? "Today" : formattedDate}
+          </span>
+
+        </motion.div>
+
+        {/* Modern Divider */}
+        <div className="h-[3px] w-48 sm:w-56 bg-gradient-to-r from-red-400 via-pink-400 to-purple-400 rounded-full mb-4"></div>
 
         {/* Task Input */}
-        <div className="p-4 pb-0 mt-4">
+        <div className="p-4 pb-0 mt-2">
           <TaskInput selectedDate={selectedDate} />
         </div>
 
         {/* Task List */}
         <div className="pb-2.5">
           {filteredTasks.length === 0 ? (
-            <div className="text-center mt-10 px-2">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center mt-10 px-2"
+            >
               <p className="text-base sm:text-lg font-serif text-gray-700">
                 No tasks. Please add if required.
               </p>
-            </div>
+            </motion.div>
           ) : (
             <DndContext
               sensors={sensors}
@@ -103,24 +115,30 @@ export default function Home() {
               modifiers={[restrictToParentElement]}
             >
               <SortableContext
-                items={filteredTasks
-                  .map((t) => t?.id)
-                  .filter(Boolean)} // 🛡️ avoid undefined ids
+                items={filteredTasks.map((t) => t?.id).filter(Boolean)}
                 strategy={verticalListSortingStrategy}
               >
-                <ul className="mt-6 sm:mt-8 px-1 sm:px-0">
-                  {filteredTasks.map((task) => (
-                    <TaskItem
-                      key={task.id}
-                      task={task}
-                      onToggle={() => toggleTask(task.id)}
-                      onDelete={() => deleteTask(task.id)}
-                      onEdit={(updates) =>
-                        editTask(task.id, updates)
-                      }
-                    />
+                <motion.ul
+                  layout
+                  className="mt-6 sm:mt-8 px-1 sm:px-0"
+                >
+                  {filteredTasks.map((task, index) => (
+                    <motion.div
+                      key={task.id || index}
+                      layout
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <TaskItem
+                        task={task}
+                        onToggle={() => toggleTask(task.id)}
+                        onDelete={() => deleteTask(task.id)}
+                        onEdit={(updates) => editTask(task.id, updates)}
+                      />
+                    </motion.div>
                   ))}
-                </ul>
+                </motion.ul>
               </SortableContext>
             </DndContext>
           )}

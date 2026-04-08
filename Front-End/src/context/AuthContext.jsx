@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, use } from "react";
 import { taskService } from "../services/taskService";
+import Confirm from "../components/Confirm";
 
 const STORAGE_KEY =
   (typeof import.meta !== "undefined" &&
@@ -14,6 +15,8 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [guestTaskCount, setGuestTaskCount] = useState(0);
 
   // 🔁 Load user on refresh
   useEffect(() => {
@@ -84,17 +87,13 @@ export function AuthProvider({ children }) {
       throw new Error("No token received from server");
     }
 
-    // ✅ STEP 1: store token FIRST
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
-    // 🔥 STEP 2: IMPORT guest tasks BEFORE setting user
     await handleGuestImport();
 
-    // ✅ STEP 3: NOW update state
     setUser(data.user);
 
-    // 🔥 STEP 4: reload AFTER everything
     window.location.reload();
 
     return data.user;
@@ -106,23 +105,15 @@ export function AuthProvider({ children }) {
     const raw = localStorage.getItem(STORAGE_KEY);
     const tasks = raw ? JSON.parse(raw) : [];
 
-    const guestTasks = tasks.filter(t => t.userEmail === "Guest");
+    const guestTasks = tasks.filter(t => !t.userEmail || t.userEmail === "Guest");
 
     console.log("IMPORT FUNCTION CALLED");
     console.log("Guest tasks:", guestTasks);
 
     if (guestTasks.length > 0) {
-
-      const confirmImport = window.confirm(
-        "Import your guest tasks to your account?"
-      );
-
-      if (confirmImport) {
-        await taskService.importGuestTasks();
-      }
-
+      setGuestTaskCount(guestTasks.length);
+      setShowImportModal(true);
     }
-
   };
 
   // 🚪 LOGOUT
@@ -139,6 +130,18 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
+
+      <Confirm
+        open={showImportModal}
+        taskCount={guestTaskCount}
+        onCancel={() => setShowImportModal(false)}
+        onConfirm={async () => {
+          await taskService.importGuestTasks();
+          setShowImportModal(false);
+          window.location.reload();
+        }}
+      />
+
     </AuthContext.Provider>
   );
 }

@@ -17,44 +17,26 @@ function getToken() {
 export const taskService = {
 
   // =========================
-  // LOAD TASKS
+  // LOAD GUEST TASKS
   // =========================
   async getAll() {
-    const token = getToken();
 
-    // Guest mode
-    if (!token) {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const tasks = raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const tasks = raw ? JSON.parse(raw) : [];
 
-      return Array.isArray(tasks) ? tasks : [];
-    }
+    console.log("Guest tasks:", tasks);
 
-    // Logged in mode
-    const res = await fetch(`${API}/tasks`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await res.json();
-
-    if (!Array.isArray(data)) return [];
-
-    return tasks.map(task => ({
-      id: task.id || crypto.randomUUID(),
-      title: task.title,
-      date: task.date,
-      time: task.time,
-      completed: task.completed || false
-    }));
+    return Array.isArray(tasks) ? tasks : [];
   },
 
+
   // =========================
-  // FETCH USER TASKS
+  // LOAD USER TASKS (MongoDB)
   // =========================
   async getTasks() {
+
     const token = getToken();
+    if (!token) return [];
 
     const res = await fetch(`${API}/tasks`, {
       headers: {
@@ -64,7 +46,7 @@ export const taskService = {
 
     const data = await res.json();
 
-    console.log("GET TASKS:", data);
+    console.log("Mongo tasks:", data);
 
     if (!Array.isArray(data)) return [];
 
@@ -73,28 +55,35 @@ export const taskService = {
       title: task.title,
       date: task.date,
       time: task.time,
-      completed: task.completed,
+      completed: task.completed || false,
     }));
   },
+
 
   // =========================
   // SAVE GUEST TASKS
   // =========================
   save(tasks) {
+
     const token = getToken();
 
-    if (!token) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    }
+    // Only save for guest
+    if (token) return;
+
+    console.log("Saving guest tasks:", tasks);
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   },
+
 
   // =========================
   // CREATE TASK
   // =========================
   async createTask(task) {
+
     const token = getToken();
 
-    // Guest
+    // Guest Mode
     if (!token) {
       return {
         id: crypto.randomUUID(),
@@ -106,7 +95,7 @@ export const taskService = {
       };
     }
 
-    // Logged in
+    // Logged In Mode
     const res = await fetch(`${API}/tasks`, {
       method: "POST",
       headers: {
@@ -127,13 +116,14 @@ export const taskService = {
     };
   },
 
+
   // =========================
   // TOGGLE TASK
   // =========================
   async toggleTask(id) {
+
     const token = getToken();
 
-    // Guest
     if (!token) {
       return id;
     }
@@ -156,13 +146,14 @@ export const taskService = {
     };
   },
 
+
   // =========================
   // DELETE TASK
   // =========================
   async deleteTask(id) {
+
     const token = getToken();
 
-    // Guest
     if (!token) {
       return id;
     }
@@ -177,13 +168,15 @@ export const taskService = {
     return id;
   },
 
+
   // =========================
   // UPDATE TASK
   // =========================
   async updateTask(id, updates) {
+
     const token = getToken();
 
-    // Guest
+    // Guest Mode
     if (!token) {
       return {
         id,
@@ -211,10 +204,12 @@ export const taskService = {
     };
   },
 
+
   // =========================
-  // IMPORT GUEST TASKS
+  // IMPORT GUEST TASKS → USER
   // =========================
   async importGuestTasks() {
+
     const token = getToken();
     if (!token) return;
 
@@ -222,12 +217,10 @@ export const taskService = {
     const tasks = raw ? JSON.parse(raw) : [];
 
     const guestTasks = tasks.filter(
-      (t) => t.userEmail === "Guest"
+      (t) => !t.userEmail || t.userEmail === "Guest"
     );
 
-    console.log("IMPORT FUNCTION CALLED");
-    console.log("ALL TASKS:", tasks);
-    console.log("GUEST TASKS:", guestTasks);
+    console.log("Importing guest tasks:", guestTasks);
 
     for (const task of guestTasks) {
 
@@ -245,16 +238,17 @@ export const taskService = {
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        console.error("FAILED TO SAVE TASK:", data);
+        console.error("Failed importing task");
       }
     }
 
-    // Remove imported tasks
-    const remaining = tasks.filter((t) => t.userEmail !== "Guest");
+    // Remove imported guest tasks
+    const remaining = tasks.filter(
+      (t) => t.userEmail !== "Guest"
+    );
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining));
-  }
+  },
+
 };
