@@ -1,6 +1,6 @@
 # Chrona
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-1877F2?style=for-the-badge&logo=vercel&logoColor=white)](https://your-live-demo-link.com)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-1877F2?style=for-the-badge&logo=vercel&logoColor=white)](https://chronalist.vercel.app/)
 
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-0F172A?style=for-the-badge&logo=tailwind-css&logoColor=38BDF8)
