@@ -233,13 +233,18 @@ export function TaskProvider({ children }) {
   // =========================
   // DRAG REORDER
   // =========================
-  const reorderTasks = (newTasks) => {
+  const reorderTasks = async (newTasks) => {
 
     dispatch({
       type: "REORDER",
       payload: newTasks,
     });
 
+    if(!isLoggedIn) {
+      taskService.save(newTasks);
+    } else {
+      await taskService.saveOrder(newTasks);
+    }
   };
 
 

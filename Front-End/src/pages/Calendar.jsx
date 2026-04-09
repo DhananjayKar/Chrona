@@ -4,6 +4,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isBefore }
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GuestWarning from "../components/GuestWarning";
 
 export default function Calendar() {
   const { tasks } = useTasks();
@@ -57,27 +58,10 @@ export default function Calendar() {
     return "bg-yellow-300";
   };
 
-  // if (!user) {
-  //   return (
-  //     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6">
-  //       <h2 className="text-3xl md:text-4xl font-bold text-gray-800 animate-pulse">
-  //         You need to be logged in
-  //       </h2>
-  //       <p className="mt-3 text-gray-600 max-w-md animate-fade-in">
-  //         Access your calendar, track your tasks, and stay organized with Chrona.
-  //       </p>
-  //       <button
-  //         onClick={() => navigate("/auth")}
-  //         className="mt-8 px-6 py-3 bg-blue-600 text-white rounded-xl text-lg shadow-md transition-all duration-300 hover:scale-105 hover:bg-blue-700 active:scale-95"
-  //       >
-  //         Go to Login
-  //       </button>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="max-w-full sm:max-w-4xl mx-auto py-10 px-2 sm:px-0">
+      <GuestWarning />
+      
       <h1 className="text-4xl sm:text-5xl font-[cursive] text-center mb-6">
         Calendar
       </h1>

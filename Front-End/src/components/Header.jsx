@@ -40,8 +40,8 @@ export default function Header() {
   }, [location.pathname]);
 
   return (
-    <header className="relative">
-      <div className="bg-[#A9B9D6] rounded-b-2xl px-2 sm:px-3 py-2 sm:py-3 flex flex-wrap sm:flex-nowrap justify-between items-center">
+    <header className="sticky top-0 z-50">
+      <div className="bg-[#9cb9ee] rounded-b-2xl px-2 sm:px-3 py-2 sm:py-3 flex flex-wrap sm:flex-nowrap justify-between items-center">
         {/* Logo & Title */}
         <div className="flex items-center gap-2 sm:gap-4 cursor-pointer" onClick={() => navigate("/")}>
           <img src="/icons/chrona.png" alt="Chrona Icon" className="w-6 h-6 sm:w-8 sm:h-8" />
@@ -91,7 +91,7 @@ export default function Header() {
                         <button
                           onClick={() => {
                             logout();
-                            navigate("/auth");
+                            navigate("/");
                           }}
                           className="w-full bg-red-400 hover:bg-red-500 hover:text-white text-base sm:text-lg py-2 sm:py-3 rounded-b-2xl text-red-700"
                         >

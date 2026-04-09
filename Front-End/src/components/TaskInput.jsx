@@ -21,7 +21,7 @@ export default function TaskInput({ selectedDate }) {
   };
 
   return (
-    <div className="bg-[#A9B9D6] rounded-2xl px-3 sm:px-4 py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8">
+    <div className="bg-[#A9B9D6] rounded-2xl px-3 sm:px-4 py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mb-8 border-2 border-double border-blue-900">
       
       <input
         type="text"

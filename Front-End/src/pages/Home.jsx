@@ -21,6 +21,7 @@ import {
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import GuestWarning from "../components/GuestWarning";
 
 export default function Home() {
   const { tasks, toggleTask, editTask, deleteTask, reorderTasks } = useTasks();
@@ -61,7 +62,10 @@ export default function Home() {
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reorderedFiltered = arrayMove(filteredTasks, oldIndex, newIndex);
+    const reorderedFiltered = arrayMove(filteredTasks, oldIndex, newIndex).map((task, index) => ({
+      ...task,
+      order: index
+    }));
 
     const otherTasks = safeTasks.filter((t) => t?.date !== selectedDate);
 
@@ -69,7 +73,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex-1">
+    <div className="flex-1 pb-24">
+      <GuestWarning />
       <div className="max-w-full sm:max-w-xl mx-auto px-4 sm:px-6 pt-6 pb-1">
 
         {/* Date Section */}

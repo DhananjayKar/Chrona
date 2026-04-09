@@ -253,4 +253,18 @@ export const taskService = {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(remaining));
   },
 
+  // -------------> Save Order <--------------
+  async saveOrder(tasks) {
+    const token = getToken();
+    if(!token) return;
+
+    await fetch(`${API}/tasks/reorder`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ tasks })
+    });
+  }
 };
