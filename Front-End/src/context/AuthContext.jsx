@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
     });
 
     const data = await res.json();
-    console.log("LOGIN RESPONSE:", data);
+    // console.log("LOGIN RESPONSE:", data);
 
     if (!res.ok) {
       throw new Error(data.message || "Login failed");
@@ -74,7 +74,7 @@ export function AuthProvider({ children }) {
     });
 
     const data = await res.json();
-    console.log("REGISTER RESPONSE:", data);
+    // console.log("REGISTER RESPONSE:", data);
 
     if (!res.ok) {
       throw new Error(data.message || "Registration failed");
