@@ -112,7 +112,7 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }) {
             <div
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing text-gray-400"
+              className="cursor-grab active:cursor-grabbing text-gray-400 touch-none"
             >
               <img src="/icons/drag.png" className="w-5 h-5" />
             </div>
